@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="antGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B4513;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A0522D;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Ant body -->
+  <ellipse cx="16" cy="20" rx="3" ry="6" fill="url(#antGradient)" />
+  <!-- Ant head -->
+  <circle cx="16" cy="10" r="4" fill="url(#antGradient)" />
+  <!-- Ant thorax -->
+  <ellipse cx="16" cy="15" rx="2.5" ry="3" fill="url(#antGradient)" />
+  <!-- Antennae -->
+  <path d="M14 8 L12 5 M18 8 L20 5" stroke="#654321" stroke-width="1" stroke-linecap="round" />
+  <!-- Legs -->
+  <path d="M13 14 L9 16 M19 14 L23 16 M13 17 L9 20 M19 17 L23 20 M13 20 L9 24 M19 20 L23 24" stroke="#654321" stroke-width="1" stroke-linecap="round" />
+</svg>
