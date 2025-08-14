@@ -29,6 +29,10 @@ jobs:
           curl -X POST "https://openapi.api.govee.com/router/api/v1/device/state" \
             -H "govee-api-key: ${{ secrets.GOVEE_API_KEY }}" \
             -H "content-type: application/json" \
+            -H "user-agent: github-actions/1.0" \
+            -H "accept: */*" \
+            --http2 \
+            -v \
             -d '{
               "requestId": "${{ steps.uuid.outputs.REQUEST_ID }}",
               "payload": {
