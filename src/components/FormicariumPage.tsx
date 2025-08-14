@@ -53,6 +53,7 @@ export default function FormicariumPage() {
   const [sensorData, setSensorData] = useState<SensorData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isUsingRealData, setIsUsingRealData] = useState(false);
   const [apiKey, setApiKey] = useState('8647a6ed-61f3-4cd2-8ecb-dc452c4bfe6c');
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [showManualEntry, setShowManualEntry] = useState(false);
@@ -126,6 +127,8 @@ export default function FormicariumPage() {
               isOnline: true,
               lastUpdated: data.timestamp ? new Date(data.timestamp).toLocaleString() + ` (${data.source || 'GitHub Actions'})` : new Date().toLocaleString() + ' (GitHub Actions)',
             });
+            setIsUsingRealData(true);
+            setError(null);
             return;
           }
         }
@@ -167,6 +170,7 @@ export default function FormicariumPage() {
       isOnline: true,
       lastUpdated: new Date().toLocaleString() + ' (Demo Data)',
     });
+    setIsUsingRealData(false);
     setLoading(false);
   };
 
@@ -347,21 +351,25 @@ export default function FormicariumPage() {
         {/* Device Info */}
         <AnimatedSection direction="up" delay={0.2} className="bg-gradient-to-br from-white/90 via-lime-50/50 to-emerald-50/50 rounded-2xl p-6 mb-8 shadow-lg border border-green-100">
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Monitoring Device (Demo Mode)</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              Monitoring Device {!isUsingRealData && '(Demo Mode)'}
+            </h3>
             <p className="text-gray-600 text-sm">MAC: {deviceMac}</p>
             <p className="text-gray-500 text-xs mt-1">Govee H5179 Temperature & Humidity Sensor</p>
-            <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-700">
-                <strong>Setup Required:</strong> To get real sensor data, add your Govee API key as a GitHub secret 
-                and the GitHub Actions workflow will automatically fetch data every 5 minutes.
-              </p>
-              <button
-                onClick={() => setShowManualEntry(true)}
-                className="mt-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 text-sm"
-              >
-                Enter Data Manually
-              </button>
-            </div>
+            {!isUsingRealData && (
+              <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-700">
+                  <strong>Setup Required:</strong> To get real sensor data, add your Govee API key as a GitHub secret 
+                  and the GitHub Actions workflow will automatically fetch data every 5 minutes.
+                </p>
+                <button
+                  onClick={() => setShowManualEntry(true)}
+                  className="mt-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 text-sm"
+                >
+                  Enter Data Manually
+                </button>
+              </div>
+            )}
           </div>
         </AnimatedSection>
 
@@ -460,7 +468,7 @@ export default function FormicariumPage() {
                 <div className="flex items-center space-x-3">
                   <div className={`w-3 h-3 rounded-full ${sensorData.isOnline ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
                   <span className="text-lg font-semibold text-gray-800">
-                    Sensor Status: {sensorData.isOnline ? 'Online (Demo)' : 'Offline'}
+                    Sensor Status: {sensorData.isOnline ? (isUsingRealData ? 'Online' : 'Online (Demo)') : 'Offline'}
                   </span>
                 </div>
                 <button

@@ -8,11 +8,11 @@
       "capabilities": [
         {
           "type": "devices.capabilities.temperature",
-          "value": 75.2
+          "value": 100
         },
         {
           "type": "devices.capabilities.humidity",
-          "value": 65.2
+          "value": 100
         }
       ]
     }
