@@ -1,0 +1,52 @@
+name: Update Sensor Data
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Every 5 minutes
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate UUID
+        id: uuid
+        run: echo "REQUEST_ID=$(uuidgen)" >> $GITHUB_OUTPUT
+
+      - name: Fetch Govee sensor data
+        run: |
+          mkdir -p public
+          curl -X POST "https://openapi.api.govee.com/router/api/v1/device/state" \
+            -H "govee-api-key: ${{ secrets.GOVEE_API_KEY }}" \
+            -H "content-type: application/json" \
+            -d '{
+              "requestId": "${{ steps.uuid.outputs.REQUEST_ID }}",
+              "payload": {
+                "sku": "H5179",
+                "device": "E2:A9:18:1F:68:82:D8:B7"
+              }
+            }' \
+            -o temp-response.json
+
+      - name: Process sensor data
+        run: |
+          # Add timestamp to the response
+          echo "$(cat temp-response.json)" | jq '. + {"timestamp": "'$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")'", "source": "github-actions"}' > public/sensor-data.json
+          rm temp-response.json
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add public/sensor-data.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update sensor data - $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+            git push
+          fi
