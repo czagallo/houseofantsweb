@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write  # Allow the workflow to write to the repository
 
+concurrency:
+  group: update-sensor-data
+  cancel-in-progress: false  # Don't cancel running jobs, just queue them
+
 jobs:
   update-data:
     runs-on: ubuntu-latest
