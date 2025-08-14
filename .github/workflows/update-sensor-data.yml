@@ -69,7 +69,14 @@ jobs:
             # Pull latest changes before pushing to handle conflicts
             git pull --rebase origin main || {
               echo "Rebase failed, trying merge strategy"
-              git pull origin main
+              git rebase --abort 2>/dev/null || true
+              git pull origin main || {
+                echo "Merge failed, resolving conflicts automatically"
+                # For sensor-data.json conflicts, always use our version (the new data)
+                git checkout --ours public/sensor-data.json 2>/dev/null || true
+                git add public/sensor-data.json 2>/dev/null || true
+                git commit --no-edit 2>/dev/null || true
+              }
             }
             # Retry push up to 3 times with exponential backoff
             for i in {1..3}; do
