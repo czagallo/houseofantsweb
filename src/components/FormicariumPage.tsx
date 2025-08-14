@@ -73,13 +73,20 @@ export default function FormicariumPage() {
 
       // Try to fetch data from GitHub Actions generated file
       try {
-        const response = await fetch('/sensor-data.json');
+        const response = await fetch('/sensor-data.json?' + Date.now()); // Cache busting
 
         if (!response.ok) {
           throw new Error(`Failed to fetch sensor data: ${response.status}`);
         }
 
-        const data = await response.json();
+        const text = await response.text();
+        
+        // Check if response is HTML (404 page) instead of JSON
+        if (text.trim().startsWith('<!doctype') || text.trim().startsWith('<html')) {
+          throw new Error('Sensor data file not found - GitHub Actions may not have run yet');
+        }
+        
+        const data = JSON.parse(text);
         
         if (data.code !== 200) {
           throw new Error(data.message || 'API returned error');
@@ -107,7 +114,7 @@ export default function FormicariumPage() {
               },
               humidity: Math.round(humidity * 10) / 10,
               isOnline: true,
-              lastUpdated: data.timestamp ? new Date(data.timestamp).toLocaleString() + ' (GitHub Actions)' : new Date().toLocaleString() + ' (GitHub Actions)',
+              lastUpdated: data.timestamp ? new Date(data.timestamp).toLocaleString() + ` (${data.source || 'GitHub Actions'})` : new Date().toLocaleString() + ' (GitHub Actions)',
             });
             return;
           }
@@ -116,8 +123,8 @@ export default function FormicariumPage() {
         throw new Error('Invalid response format from Govee API');
         
       } catch (fetchError) {
-        console.warn('GitHub Actions data not available, falling back to demo data:', fetchError.message);
-        setError(`Sensor data file not found: ${fetchError.message}. Showing demo data.`);
+        console.warn('GitHub Actions data not available, falling back to demo data:', fetchError);
+        setError(`GitHub Actions not set up yet: ${fetchError.message}. Showing demo data.`);
         useMockData();
       }
       
