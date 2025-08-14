@@ -59,6 +59,26 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
               Antypedia
             </button>
             <button
+              onClick={() => onPageChange('formicarium')}
+              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                currentPage === 'formicarium'
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
+                  : 'text-gray-700 hover:bg-gradient-to-r hover:from-lime-100 hover:to-green-100 hover:text-green-700'
+              }`}
+            >
+              Monitor
+            </button>
+            <button
+              onClick={() => onPageChange('formicarium')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                currentPage === 'formicarium'
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
+                  : 'text-gray-700 hover:bg-gradient-to-r hover:from-lime-100 hover:to-green-100 hover:text-green-700'
+              }`}
+            >
+              Monitor
+            </button>
+            <button
               onClick={() => onPageChange('admin')}
               className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
                 currentPage === 'admin'
