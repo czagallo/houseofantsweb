@@ -69,7 +69,7 @@ export default function FormicariumPage() {
       setError(null);
 
       // First, get the device status for the specific MAC address
-      const response = await fetch(`https://openapi.api.govee.com/router/api/v1/device/state?device=${deviceMac}&model=H5075`, {
+      const response = await fetch(`https://openapi.api.govee.com/router/api/v1/device/state?device=${deviceMac}&model=H5179`, {
         method: 'GET',
         headers: {
           'Govee-API-Key': apiKey,
