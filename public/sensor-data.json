@@ -2,20 +2,20 @@
   "code": 200,
   "message": "Success",
   "data": {
-    "device": "E2:A9:18:1F:68:82:D8:B7",
-    "sku": "H5179",
-    "capabilities": [
-      {
-        "type": "devices.capabilities.range",
-        "instance": "sensorTemperature",
-        "value": 24.5
-      },
-      {
-        "type": "devices.capabilities.range", 
-        "instance": "sensorHumidity",
-        "value": 65.2
-      }
-    ]
+    "payload": {
+      "device": "E2:A9:18:1F:68:82:D8:B7",
+      "sku": "H5179",
+      "capabilities": [
+        {
+          "type": "devices.capabilities.temperature",
+          "value": 75.2
+        },
+        {
+          "type": "devices.capabilities.humidity",
+          "value": 65.2
+        }
+      ]
+    }
   },
   "timestamp": "2025-08-14T12:47:00.000Z",
   "source": "temporary-test-data"
