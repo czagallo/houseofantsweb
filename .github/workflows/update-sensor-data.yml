@@ -93,7 +93,8 @@ jobs:
           git config --local pull.rebase false  # Use merge strategy
           
           # Check if we have changes to commit
-          git add public/sensor-data.json dist/sensor-data.json
+          git add public/sensor-data.json
+          git add -f dist/sensor-data.json  # Force add despite .gitignore
           if git diff --staged --quiet; then
             echo "No changes to commit"
             exit 0
