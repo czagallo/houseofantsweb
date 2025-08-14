@@ -1,1 +1,34 @@
-{"error": "Empty API response", "timestamp": "2025-08-14T14:56:31.568Z", "source": "github-actions-error"}
+{
+  "requestId": "3bf978d7-b712-414c-b340-44c93232a346",
+  "msg": "success",
+  "code": 200,
+  "payload": {
+    "sku": "H5179",
+    "device": "E2:A9:18:1F:68:82:D8:B7",
+    "capabilities": [
+      {
+        "type": "devices.capabilities.online",
+        "instance": "online",
+        "state": {
+          "value": true
+        }
+      },
+      {
+        "type": "devices.capabilities.property",
+        "instance": "sensorTemperature",
+        "state": {
+          "value": 81.32
+        }
+      },
+      {
+        "type": "devices.capabilities.property",
+        "instance": "sensorHumidity",
+        "state": {
+          "value": 74.3
+        }
+      }
+    ]
+  },
+  "timestamp": "2025-08-14T15:01:20.815Z",
+  "source": "github-actions"
+}
