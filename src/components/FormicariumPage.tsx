@@ -68,13 +68,26 @@ export default function FormicariumPage() {
       setLoading(true);
       setError(null);
 
-      // First, get the device status for the specific MAC address
-      const response = await fetch(`https://openapi.api.govee.com/router/api/v1/device/state?device=${deviceMac}&model=H5179`, {
+      // Generate a unique request ID
+      const requestId = crypto.randomUUID();
+      
+      // Prepare the request body
+      const requestBody = {
+        requestId: requestId,
+        payload: {
+          sku: "H5179",
+          device: deviceMac
+        }
+      };
+
+      // Get the device status using POST request
+      const response = await fetch('https://openapi.api.govee.com/router/api/v1/device/state', {
         method: 'POST',
         headers: {
           'Govee-API-Key': apiKey,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -87,36 +100,38 @@ export default function FormicariumPage() {
         throw new Error(data.message || 'Failed to fetch device data');
       }
 
-      // Look for the specific device
-      const targetDevice = data.data.devices.find((device: DeviceStatus) => 
-        device.device === deviceMac
-      );
-
-      if (!targetDevice) {
-        throw new Error(`Device with MAC address ${deviceMac} not found`);
-      }
-
-      const sensorProps = targetDevice.properties.find(prop => 
-        prop.temperature !== undefined || prop.humidity !== undefined
-      );
-
-      if (sensorProps) {
-        // The API returns temperature in Fahrenheit
-        const tempF = sensorProps.temperature || 72; // Default fallback
-        const humidity = sensorProps.humidity || 65; // Default fallback
+      // Extract sensor data from the response
+      if (data.data && data.data.properties) {
+        const properties = data.data.properties;
         
-        // Convert to Celsius
-        const tempC = fahrenheitToCelsius(tempF);
+        // Find temperature and humidity values
+        const tempProperty = properties.find((prop: any) => prop.temperature !== undefined);
+        const humidityProperty = properties.find((prop: any) => prop.humidity !== undefined);
+        const onlineProperty = properties.find((prop: any) => prop.online !== undefined);
         
-        setSensorData({
-          temperature: {
-            fahrenheit: tempF,
-            celsius: tempC,
-          },
-          humidity: humidity,
-          isOnline: sensorProps.online,
-          lastUpdated: new Date().toLocaleString(),
-        });
+        if (tempProperty || humidityProperty) {
+          // The API returns temperature in Fahrenheit
+          const tempF = tempProperty?.temperature || 72; // Default fallback
+          const humidity = humidityProperty?.humidity || 65; // Default fallback
+          const isOnline = onlineProperty?.online !== false; // Default to true if not specified
+          
+          // Convert to Celsius
+          const tempC = fahrenheitToCelsius(tempF);
+          
+          setSensorData({
+            temperature: {
+              fahrenheit: tempF,
+              celsius: tempC,
+            },
+            humidity: humidity,
+            isOnline: isOnline,
+            lastUpdated: new Date().toLocaleString(),
+          });
+        } else {
+          throw new Error('No temperature or humidity data found in response');
+        }
+      } else {
+        throw new Error('Invalid response format from API');
       }
       
     } catch (err) {
