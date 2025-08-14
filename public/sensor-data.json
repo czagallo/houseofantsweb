@@ -1,34 +1,22 @@
 {
-  "requestId": "3bf978d7-b712-414c-b340-44c93232a346",
-  "msg": "success",
   "code": 200,
-  "payload": {
-    "sku": "H5179",
-    "device": "E2:A9:18:1F:68:82:D8:B7",
-    "capabilities": [
-      {
-        "type": "devices.capabilities.online",
-        "instance": "online",
-        "state": {
-          "value": true
-        }
-      },
-      {
-        "type": "devices.capabilities.property",
-        "instance": "sensorTemperature",
-        "state": {
+  "message": "success",
+  "data": {
+    "payload": {
+      "device": "E2:A9:18:1F:68:82:D8:B7",
+      "sku": "H5179",
+      "capabilities": [
+        {
+          "type": "devices.capabilities.temperature",
           "value": 81.32
-        }
-      },
-      {
-        "type": "devices.capabilities.property",
-        "instance": "sensorHumidity",
-        "state": {
+        },
+        {
+          "type": "devices.capabilities.humidity",
           "value": 74.3
         }
-      }
-    ]
+      ]
+    }
   },
-  "timestamp": "2025-08-14T15:01:20.815Z",
+  "timestamp": "2025-08-14T15:05:11.430Z",
   "source": "github-actions"
 }
