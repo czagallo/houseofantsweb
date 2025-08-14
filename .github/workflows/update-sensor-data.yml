@@ -40,8 +40,21 @@ jobs:
 
       - name: Process sensor data
         run: |
-          # Add timestamp to the response
-          echo "$(cat temp-response.json)" | jq '. + {"timestamp": "'$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")'", "source": "github-actions"}' > public/sensor-data.json
+          # Debug: Show what we received from the API
+          echo "=== API Response Debug ==="
+          echo "File size: $(wc -c < temp-response.json) bytes"
+          echo "Content:"
+          cat temp-response.json
+          echo "=========================="
+          
+          # Check if response is empty
+          if [ ! -s temp-response.json ]; then
+            echo "ERROR: API response is empty"
+            echo '{"error": "Empty API response", "timestamp": "'$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")'", "source": "github-actions-error"}' > public/sensor-data.json
+          else
+            # Add timestamp to the response
+            echo "$(cat temp-response.json)" | jq '. + {"timestamp": "'$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")'", "source": "github-actions"}' > public/sensor-data.json
+          fi
           rm temp-response.json
 
       - name: Commit and push changes
