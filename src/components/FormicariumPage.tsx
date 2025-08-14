@@ -68,74 +68,16 @@ export default function FormicariumPage() {
       setLoading(true);
       setError(null);
 
-      // Generate a unique request ID
-      const requestId = crypto.randomUUID();
-      
-      // Prepare the request body
-      const requestBody = {
-        requestId: requestId,
-        payload: {
-          sku: "H5179",
-          device: deviceMac
-        }
-      };
-
-      // Get the device status using POST request
-      const response = await fetch('https://openapi.api.govee.com/router/api/v1/device/state', {
-        method: 'POST',
-        headers: {
-          'govee-api-key': apiKey,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
-      if (data.code !== 200) {
-        throw new Error(data.message || 'Failed to fetch device data');
-      }
-
-      // Extract sensor data from the response
-      if (data.data && data.data.properties) {
-        const properties = data.data.properties;
-        
-        // Find temperature and humidity values
-        const tempProperty = properties.find((prop: any) => prop.temperature !== undefined);
-        const humidityProperty = properties.find((prop: any) => prop.humidity !== undefined);
-        const onlineProperty = properties.find((prop: any) => prop.online !== undefined);
-        
-        if (tempProperty || humidityProperty) {
-          // The API returns temperature in Fahrenheit
-          const tempF = tempProperty?.temperature || 72; // Default fallback
-          const humidity = humidityProperty?.humidity || 65; // Default fallback
-          const isOnline = onlineProperty?.online !== false; // Default to true if not specified
-          
-          // Convert to Celsius
-          const tempC = fahrenheitToCelsius(tempF);
-          
-          setSensorData({
-            temperature: {
-              fahrenheit: tempF,
-              celsius: tempC,
-            },
-            humidity: humidity,
-            isOnline: isOnline,
-            lastUpdated: new Date().toLocaleString(),
-          });
-        } else {
-          throw new Error('No temperature or humidity data found in response');
-        }
-      } else {
-        throw new Error('Invalid response format from API');
-      }
+      // Due to CORS restrictions, we'll use mock data for now
+      // In production, you would need a backend proxy to call the Govee API
+      console.warn('CORS restriction prevents direct API calls from browser. Using mock data.');
+      useMockData();
       
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch sensor data');
+      console.error('API Error:', err);
+      // Fall back to mock data on any error
+      setError('Using demo data due to CORS restrictions. In production, use a backend proxy.');
+      useMockData();
     } finally {
       setLoading(false);
     }
@@ -143,8 +85,14 @@ export default function FormicariumPage() {
 
   // Mock data for demonstration when no API key is provided
   const useMockData = () => {
-    const mockTemp = 72 + Math.random() * 6; // 72-78°F
-    const mockHumidity = 60 + Math.random() * 20; // 60-80%
+    // Simulate realistic formicarium conditions
+    const baseTemp = 74; // Base temperature in Fahrenheit
+    const tempVariation = (Math.sin(Date.now() / 60000) * 2) + (Math.random() * 2 - 1); // Slow oscillation + small random
+    const mockTemp = baseTemp + tempVariation; // 72-76°F range
+    
+    const baseHumidity = 68; // Base humidity
+    const humidityVariation = (Math.cos(Date.now() / 80000) * 5) + (Math.random() * 4 - 2); // Slow oscillation + small random
+    const mockHumidity = Math.max(50, Math.min(85, baseHumidity + humidityVariation)); // 50-85% range
     
     setSensorData({
       temperature: {
@@ -153,7 +101,7 @@ export default function FormicariumPage() {
       },
       humidity: Math.round(mockHumidity * 10) / 10,
       isOnline: true,
-      lastUpdated: new Date().toLocaleString(),
+      lastUpdated: new Date().toLocaleString() + ' (Demo Data)',
     });
     setLoading(false);
   };
@@ -251,9 +199,15 @@ export default function FormicariumPage() {
         {/* Device Info */}
         <AnimatedSection direction="up" delay={0.2} className="bg-gradient-to-br from-white/90 via-lime-50/50 to-emerald-50/50 rounded-2xl p-6 mb-8 shadow-lg border border-green-100">
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Monitoring Device</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Monitoring Device (Demo Mode)</h3>
             <p className="text-gray-600 text-sm">MAC: {deviceMac}</p>
-            <p className="text-gray-500 text-xs mt-1">Govee H5075 Temperature & Humidity Sensor</p>
+            <p className="text-gray-500 text-xs mt-1">Govee H5179 Temperature & Humidity Sensor</p>
+            <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
+              <p className="text-sm text-blue-700">
+                <strong>Note:</strong> Currently showing demo data due to CORS restrictions. 
+                For real data, implement a backend proxy to call the Govee API.
+              </p>
+            </div>
           </div>
         </AnimatedSection>
 
@@ -352,7 +306,7 @@ export default function FormicariumPage() {
                 <div className="flex items-center space-x-3">
                   <div className={`w-3 h-3 rounded-full ${sensorData.isOnline ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
                   <span className="text-lg font-semibold text-gray-800">
-                    Sensor Status: {sensorData.isOnline ? 'Online' : 'Offline'}
+                    Sensor Status: {sensorData.isOnline ? 'Online (Demo)' : 'Offline'}
                   </span>
                 </div>
                 <button
