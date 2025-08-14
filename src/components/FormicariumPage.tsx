@@ -81,12 +81,22 @@ export default function FormicariumPage() {
 
         const text = await response.text();
         
+        // Check if response is empty
+        if (!text.trim()) {
+          throw new Error('Sensor data file is empty - GitHub Actions may not have run yet');
+        }
+        
         // Check if response is HTML (404 page) instead of JSON
         if (text.trim().startsWith('<!doctype') || text.trim().startsWith('<html')) {
           throw new Error('Sensor data file not found - GitHub Actions may not have run yet');
         }
         
-        const data = JSON.parse(text);
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (parseError) {
+          throw new Error(`Invalid JSON in sensor data file: ${parseError.message}`);
+        }
         
         if (data.code !== 200) {
           throw new Error(data.message || 'API returned error');
