@@ -71,29 +71,23 @@ export default function FormicariumPage() {
       setLoading(true);
       setError(null);
 
-      // Try to use Vercel serverless function first
+      // Try to fetch data from GitHub Actions generated file
       try {
-        const proxyUrl = 'https://your-vercel-app.vercel.app/api/govee-proxy';
-        const response = await fetch(proxyUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
+        const response = await fetch('/sensor-data.json');
 
         if (!response.ok) {
-          throw new Error(`Proxy error: ${response.status}`);
+          throw new Error(`Failed to fetch sensor data: ${response.status}`);
         }
 
         const data = await response.json();
         
-        if (data.error) {
-          throw new Error(data.error);
+        if (data.code !== 200) {
+          throw new Error(data.message || 'API returned error');
         }
 
-        // Parse Govee API response
-        if (data.payload && data.payload.capabilities) {
-          const capabilities = data.payload.capabilities;
+        // Parse GitHub Actions stored Govee API response
+        if (data.data && data.data.payload && data.data.payload.capabilities) {
+          const capabilities = data.data.payload.capabilities;
           let temperature = null;
           let humidity = null;
           
@@ -113,7 +107,7 @@ export default function FormicariumPage() {
               },
               humidity: Math.round(humidity * 10) / 10,
               isOnline: true,
-              lastUpdated: new Date().toLocaleString(),
+              lastUpdated: data.timestamp ? new Date(data.timestamp).toLocaleString() + ' (GitHub Actions)' : new Date().toLocaleString() + ' (GitHub Actions)',
             });
             return;
           }
@@ -121,9 +115,9 @@ export default function FormicariumPage() {
         
         throw new Error('Invalid response format from Govee API');
         
-      } catch (proxyError) {
-        console.warn('Proxy API failed, falling back to demo data:', proxyError.message);
-        setError(`API unavailable: ${proxyError.message}. Showing demo data.`);
+      } catch (fetchError) {
+        console.warn('GitHub Actions data not available, falling back to demo data:', fetchError.message);
+        setError(`Sensor data file not found: ${fetchError.message}. Showing demo data.`);
         useMockData();
       }
       
@@ -341,8 +335,8 @@ export default function FormicariumPage() {
             <p className="text-gray-500 text-xs mt-1">Govee H5179 Temperature & Humidity Sensor</p>
             <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
               <p className="text-sm text-blue-700">
-                <strong>Setup Required:</strong> To get real sensor data, deploy the Vercel serverless function 
-                and update the proxy URL in the code, or use manual entry below.
+                <strong>Setup Required:</strong> To get real sensor data, add your Govee API key as a GitHub secret 
+                and the GitHub Actions workflow will automatically fetch data every 5 minutes.
               </p>
               <button
                 onClick={() => setShowManualEntry(true)}
