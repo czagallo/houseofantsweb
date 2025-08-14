@@ -96,35 +96,34 @@ jobs:
           fi
           
           git commit -m "Update sensor data - $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          
+          # Push with retry logic and conflict resolution
+          for i in {1..5}; do
+            echo "Push attempt $i"
             
-            # Push with retry logic and conflict resolution
-            for i in {1..5}; do
-              echo "Push attempt $i"
-              
-              # Pull latest changes first with merge strategy
-              git pull origin main --no-rebase || {
-                echo "Pull failed, attempting to resolve conflicts"
-                # If there are conflicts in sensor-data.json, use our version
-                if git status --porcelain | grep -q "public/sensor-data.json"; then
-                  echo "Resolving sensor-data.json conflict by using our version"
-                  git add public/sensor-data.json
-                  git commit -m "Resolve sensor data conflict - $(date -u +"%Y-%m-%d %H:%M:%S UTC")" || true
-                fi
-              }
-              
-              # Try to push
-              if git push origin main; then
-                echo "Successfully pushed changes"
-                echo "GitHub Pages will automatically rebuild due to public/ file changes"
-                break
-              else
-                echo "Push failed, waiting before retry..."
-                sleep $((i * 2))
+            # Pull latest changes first with merge strategy
+            git pull origin main --no-rebase || {
+              echo "Pull failed, attempting to resolve conflicts"
+              # If there are conflicts in sensor-data.json, use our version
+              if git status --porcelain | grep -q "public/sensor-data.json"; then
+                echo "Resolving sensor-data.json conflict by using our version"
+                git add public/sensor-data.json
+                git commit -m "Resolve sensor data conflict - $(date -u +"%Y-%m-%d %H:%M:%S UTC")" || true
               fi
-              
-              if [ $i -eq 5 ]; then
-                echo "Failed to push after 5 attempts"
-                exit 1
-              fi
-            done
-          fi
+            }
+            
+            # Try to push
+            if git push origin main; then
+              echo "Successfully pushed changes"
+              echo "GitHub Pages will automatically rebuild due to public/ file changes"
+              break
+            else
+              echo "Push failed, waiting before retry..."
+              sleep $((i * 2))
+            fi
+            
+            if [ $i -eq 5 ]; then
+              echo "Failed to push after 5 attempts"
+              exit 1
+            fi
+          done
