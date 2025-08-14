@@ -84,7 +84,7 @@ export default function FormicariumPage() {
       const response = await fetch('https://openapi.api.govee.com/router/api/v1/device/state', {
         method: 'POST',
         headers: {
-          'Govee-API-Key': apiKey,
+          'govee-api-key': apiKey,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
