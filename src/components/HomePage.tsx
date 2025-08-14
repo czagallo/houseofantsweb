@@ -52,7 +52,7 @@ export default function HomePage() {
               </div>
             )}
             <iframe
-              src="https://www.youtube.com/embed/SVeMHqWQ8og?autoplay=0&mute=0"
+              src="https://www.youtube.com/embed/XjpD10cdUsA?autoplay=0&mute=0"
               title="House of Ants Live Stream"
               className="w-full h-full"
               allowFullScreen
