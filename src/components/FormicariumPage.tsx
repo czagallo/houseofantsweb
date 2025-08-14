@@ -55,6 +55,9 @@ export default function FormicariumPage() {
   const [error, setError] = useState<string | null>(null);
   const [apiKey, setApiKey] = useState('8647a6ed-61f3-4cd2-8ecb-dc452c4bfe6c');
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  const [showManualEntry, setShowManualEntry] = useState(false);
+  const [manualTemp, setManualTemp] = useState('');
+  const [manualHumidity, setManualHumidity] = useState('');
   const deviceMac = 'E2:A9:18:1F:68:82:D8:B7';
 
   // Convert Fahrenheit to Celsius
@@ -104,6 +107,32 @@ export default function FormicariumPage() {
       lastUpdated: new Date().toLocaleString() + ' (Demo Data)',
     });
     setLoading(false);
+  };
+
+  const handleManualEntry = (e: React.FormEvent) => {
+    e.preventDefault();
+    const tempF = parseFloat(manualTemp);
+    const humidity = parseFloat(manualHumidity);
+    
+    if (isNaN(tempF) || isNaN(humidity)) {
+      setError('Please enter valid numbers for temperature and humidity');
+      return;
+    }
+    
+    setSensorData({
+      temperature: {
+        fahrenheit: Math.round(tempF * 10) / 10,
+        celsius: fahrenheitToCelsius(tempF),
+      },
+      humidity: Math.round(humidity * 10) / 10,
+      isOnline: true,
+      lastUpdated: new Date().toLocaleString() + ' (Manual Entry)',
+    });
+    
+    setShowManualEntry(false);
+    setManualTemp('');
+    setManualHumidity('');
+    setError(null);
   };
 
   useEffect(() => {
@@ -188,6 +217,64 @@ export default function FormicariumPage() {
           </div>
         )}
 
+        {/* Manual Data Entry Modal */}
+        {showManualEntry && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl"
+            >
+              <h3 className="text-xl font-bold text-gray-800 mb-4">Enter Sensor Data Manually</h3>
+              <form onSubmit={handleManualEntry}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Temperature (°F)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={manualTemp}
+                    onChange={(e) => setManualTemp(e.target.value)}
+                    placeholder="e.g., 74.5"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Humidity (%)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                    value={manualHumidity}
+                    onChange={(e) => setManualHumidity(e.target.value)}
+                    placeholder="e.g., 65.0"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowManualEntry(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:to-emerald-600"
+                  >
+                    Update Data
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
         {/* Loading State */}
         {loading && (
           <AnimatedSection direction="up" className="text-center py-12">
@@ -205,8 +292,14 @@ export default function FormicariumPage() {
             <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
               <p className="text-sm text-blue-700">
                 <strong>Note:</strong> Currently showing demo data due to CORS restrictions. 
-                For real data, implement a backend proxy to call the Govee API.
+                For real data, implement a backend proxy to call the Govee API, or use manual entry below.
               </p>
+              <button
+                onClick={() => setShowManualEntry(true)}
+                className="mt-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 text-sm"
+              >
+                Enter Data Manually
+              </button>
             </div>
           </div>
         </AnimatedSection>
