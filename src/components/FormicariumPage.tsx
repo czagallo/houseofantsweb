@@ -53,8 +53,9 @@ export default function FormicariumPage() {
   const [sensorData, setSensorData] = useState<SensorData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [apiKey, setApiKey] = useState('');
+  const [apiKey, setApiKey] = useState('8647a6ed-61f3-4cd2-8ecb-dc452c4bfe6c');
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  const deviceMac = 'E2:A9:18:1F:68:82:D8:B7';
 
   // Convert Fahrenheit to Celsius
   const fahrenheitToCelsius = (fahrenheit: number): number => {
@@ -63,17 +64,12 @@ export default function FormicariumPage() {
 
   // Fetch device status from Govee API
   const fetchSensorData = async () => {
-    if (!apiKey) {
-      setError('Please enter your Govee API key');
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('https://developer-api.govee.com/v1/devices/state', {
+      // First, get the device status for the specific MAC address
+      const response = await fetch(`https://developer-api.govee.com/v1/devices/state?device=${deviceMac}&model=H5075`, {
         method: 'GET',
         headers: {
           'Govee-API-Key': apiKey,
@@ -91,21 +87,25 @@ export default function FormicariumPage() {
         throw new Error(data.message || 'Failed to fetch device data');
       }
 
-      // Find the first device with temperature/humidity data
-      const deviceWithSensors = data.data.devices.find((device: DeviceStatus) => 
-        device.properties.some(prop => prop.temperature !== undefined || prop.humidity !== undefined)
+      // Look for the specific device
+      const targetDevice = data.data.devices.find((device: DeviceStatus) => 
+        device.device === deviceMac
       );
 
-      if (!deviceWithSensors) {
-        throw new Error('No temperature/humidity sensors found in your devices');
+      if (!targetDevice) {
+        throw new Error(`Device with MAC address ${deviceMac} not found`);
       }
 
-      const sensorProps = deviceWithSensors.properties.find(prop => 
+      const sensorProps = targetDevice.properties.find(prop => 
         prop.temperature !== undefined || prop.humidity !== undefined
       );
 
       if (sensorProps) {
-        const tempF = sensorProps.temperature || 0;
+        // The API returns temperature in Fahrenheit
+        const tempF = sensorProps.temperature || 72; // Default fallback
+        const humidity = sensorProps.humidity || 65; // Default fallback
+        
+        // Convert to Celsius
         const tempC = fahrenheitToCelsius(tempF);
         
         setSensorData({
@@ -113,11 +113,12 @@ export default function FormicariumPage() {
             fahrenheit: tempF,
             celsius: tempC,
           },
-          humidity: sensorProps.humidity || 0,
+          humidity: humidity,
           isOnline: sensorProps.online,
           lastUpdated: new Date().toLocaleString(),
         });
       }
+      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch sensor data');
     } finally {
@@ -143,14 +144,8 @@ export default function FormicariumPage() {
   };
 
   useEffect(() => {
-    // Load API key from localStorage
-    const savedApiKey = localStorage.getItem('govee-api-key');
-    if (savedApiKey) {
-      setApiKey(savedApiKey);
-    } else {
-      // Use mock data if no API key
-      useMockData();
-    }
+    // Automatically fetch data with the provided API key
+    fetchSensorData();
   }, []);
 
   useEffect(() => {
@@ -192,34 +187,6 @@ export default function FormicariumPage() {
             Real-time temperature and humidity monitoring for optimal ant colony conditions using Govee sensors.
           </p>
         </AnimatedSection>
-
-        {/* API Key Setup */}
-        {!apiKey && (
-          <AnimatedSection direction="up" delay={0.2} className="bg-gradient-to-br from-white/90 via-lime-50/50 to-emerald-50/50 rounded-2xl p-8 mb-8 shadow-2xl border border-green-100">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-green-700 bg-clip-text text-transparent mb-4">
-                Connect Your Govee Sensors
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Enter your Govee API key to connect your temperature and humidity sensors.
-              </p>
-              <button
-                onClick={() => setShowApiKeyInput(true)}
-                className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-lg hover:shadow-xl"
-              >
-                Setup API Key
-              </button>
-              <div className="mt-4">
-                <button
-                  onClick={useMockData}
-                  className="text-green-600 hover:text-green-700 underline text-sm"
-                >
-                  View Demo with Mock Data
-                </button>
-              </div>
-            </div>
-          </AnimatedSection>
-        )}
 
         {/* API Key Input Modal */}
         {showApiKeyInput && (
@@ -266,6 +233,15 @@ export default function FormicariumPage() {
           </AnimatedSection>
         )}
 
+        {/* Device Info */}
+        <AnimatedSection direction="up" delay={0.2} className="bg-gradient-to-br from-white/90 via-lime-50/50 to-emerald-50/50 rounded-2xl p-6 mb-8 shadow-lg border border-green-100">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Monitoring Device</h3>
+            <p className="text-gray-600 text-sm">MAC: {deviceMac}</p>
+            <p className="text-gray-500 text-xs mt-1">Govee H5075 Temperature & Humidity Sensor</p>
+          </div>
+        </AnimatedSection>
+
         {/* Error State */}
         {error && (
           <AnimatedSection direction="up" className="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-8 mb-8 border border-red-200">
@@ -277,7 +253,7 @@ export default function FormicariumPage() {
               </div>
             </div>
             <button
-              onClick={() => apiKey ? fetchSensorData() : useMockData()}
+              onClick={fetchSensorData}
               className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-300"
             >
               Retry
@@ -365,7 +341,7 @@ export default function FormicariumPage() {
                   </span>
                 </div>
                 <button
-                  onClick={() => apiKey ? fetchSensorData() : useMockData()}
+                  onClick={fetchSensorData}
                   className="flex items-center space-x-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
                   <RefreshCw className="w-4 h-4" />
