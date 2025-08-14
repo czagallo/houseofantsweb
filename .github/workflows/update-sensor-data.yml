@@ -79,6 +79,10 @@ jobs:
               timestamp: "'$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")'",
               source: "github-actions"
             }' > public/sensor-data.json
+            
+            # Also update the dist directory for immediate GitHub Pages serving
+            mkdir -p dist
+            cp public/sensor-data.json dist/sensor-data.json
           fi
           rm temp-response.json
 
@@ -89,7 +93,7 @@ jobs:
           git config --local pull.rebase false  # Use merge strategy
           
           # Check if we have changes to commit
-          git add public/sensor-data.json
+          git add public/sensor-data.json dist/sensor-data.json
           if git diff --staged --quiet; then
             echo "No changes to commit"
             exit 0
