@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/govee-proxy.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "env": {
+    "GOVEE_API_KEY": "@govee-api-key"
+  }
+}

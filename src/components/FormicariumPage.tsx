@@ -71,15 +71,65 @@ export default function FormicariumPage() {
       setLoading(true);
       setError(null);
 
-      // Due to CORS restrictions, we'll use mock data for now
-      // In production, you would need a backend proxy to call the Govee API
-      console.warn('CORS restriction prevents direct API calls from browser. Using mock data.');
-      useMockData();
+      // Try to use Vercel serverless function first
+      try {
+        const proxyUrl = 'https://your-vercel-app.vercel.app/api/govee-proxy';
+        const response = await fetch(proxyUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Proxy error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        // Parse Govee API response
+        if (data.payload && data.payload.capabilities) {
+          const capabilities = data.payload.capabilities;
+          let temperature = null;
+          let humidity = null;
+          
+          capabilities.forEach(cap => {
+            if (cap.type === 'devices.capabilities.temperature') {
+              temperature = cap.value; // Should be in Fahrenheit
+            } else if (cap.type === 'devices.capabilities.humidity') {
+              humidity = cap.value;
+            }
+          });
+
+          if (temperature !== null && humidity !== null) {
+            setSensorData({
+              temperature: {
+                fahrenheit: Math.round(temperature * 10) / 10,
+                celsius: fahrenheitToCelsius(temperature),
+              },
+              humidity: Math.round(humidity * 10) / 10,
+              isOnline: true,
+              lastUpdated: new Date().toLocaleString(),
+            });
+            return;
+          }
+        }
+        
+        throw new Error('Invalid response format from Govee API');
+        
+      } catch (proxyError) {
+        console.warn('Proxy API failed, falling back to demo data:', proxyError.message);
+        setError(`API unavailable: ${proxyError.message}. Showing demo data.`);
+        useMockData();
+      }
       
     } catch (err) {
       console.error('API Error:', err);
-      // Fall back to mock data on any error
-      setError('Using demo data due to CORS restrictions. In production, use a backend proxy.');
+      setError(`Error: ${err.message}. Using demo data.`);
       useMockData();
     } finally {
       setLoading(false);
@@ -291,8 +341,8 @@ export default function FormicariumPage() {
             <p className="text-gray-500 text-xs mt-1">Govee H5179 Temperature & Humidity Sensor</p>
             <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
               <p className="text-sm text-blue-700">
-                <strong>Note:</strong> Currently showing demo data due to CORS restrictions. 
-                For real data, implement a backend proxy to call the Govee API, or use manual entry below.
+                <strong>Setup Required:</strong> To get real sensor data, deploy the Vercel serverless function 
+                and update the proxy URL in the code, or use manual entry below.
               </p>
               <button
                 onClick={() => setShowManualEntry(true)}
