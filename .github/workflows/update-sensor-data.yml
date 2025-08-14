@@ -56,8 +56,29 @@ jobs:
             echo "ERROR: API response is empty"
             echo '{"error": "Empty API response", "timestamp": "'$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")'", "source": "github-actions-error"}' > public/sensor-data.json
           else
-            # Add timestamp to the response
-            echo "$(cat temp-response.json)" | jq '. + {"timestamp": "'$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")'", "source": "github-actions"}' > public/sensor-data.json
+            # Transform the real API response to match FormicariumPage expectations
+            echo "$(cat temp-response.json)" | jq '{
+              code: .code,
+              message: .msg,
+              data: {
+                payload: {
+                  device: .payload.device,
+                  sku: .payload.sku,
+                  capabilities: [
+                    {
+                      type: "devices.capabilities.temperature",
+                      value: (.payload.capabilities[] | select(.instance == "sensorTemperature") | .state.value)
+                    },
+                    {
+                      type: "devices.capabilities.humidity", 
+                      value: (.payload.capabilities[] | select(.instance == "sensorHumidity") | .state.value)
+                    }
+                  ]
+                }
+              },
+              timestamp: "'$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")'",
+              source: "github-actions"
+            }' > public/sensor-data.json
           fi
           rm temp-response.json
 
