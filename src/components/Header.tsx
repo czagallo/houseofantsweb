@@ -86,7 +86,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
               <span className="text-sm font-medium bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">LIVE</span>
             </div>
             <a 
-              href="https://www.youtube.com/watch?v=XjpD10cdUsA" 
+              href="https://www.youtube.com/watch?v=s8hucCd1TcI" 
               target="_blank" 
               rel="noopener noreferrer"
               className="hidden sm:flex items-center space-x-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl"
