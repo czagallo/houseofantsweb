@@ -74,7 +74,8 @@ export default function FormicariumPage() {
 
       // Try to fetch data from GitHub Actions generated file
       try {
-        const response = await fetch('/sensor-data.json?' + Date.now()); // Cache busting
+        // Fetch directly from GitHub raw content to get real-time updates
+        const response = await fetch('https://raw.githubusercontent.com/czagallo/houseofantsweb/main/public/sensor-data.json?' + Date.now()); // Cache busting
 
         if (!response.ok) {
           throw new Error(`Failed to fetch sensor data: ${response.status}`);
