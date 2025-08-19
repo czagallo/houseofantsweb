@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Thermometer, Droplets, Wifi, WifiOff, RefreshCw, AlertTriangle } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
+import HistoricalDataChart from './HistoricalDataChart';
 
 interface GoveeDevice {
   device: string;
@@ -501,6 +502,11 @@ export default function FormicariumPage() {
                 </div>
               </div>
             </AnimatedSection>
+
+            {/* Historical Data Chart */}
+            <div className="mt-8">
+              <HistoricalDataChart />
+            </div>
 
             {/* Care Tips */}
             <AnimatedSection direction="up" delay={0.6} className="bg-gradient-to-br from-white/90 via-lime-50/50 to-emerald-50/50 rounded-2xl p-8 shadow-2xl border border-green-100 mt-8">
