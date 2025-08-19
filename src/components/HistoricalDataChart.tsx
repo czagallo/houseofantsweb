@@ -164,8 +164,8 @@ export default function HistoricalDataChart() {
         setHoveredPoint({
           type,
           data: closestPoint,
-          x: e.clientX,
-          y: e.clientY,
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
           chartX: x
         });
       }
@@ -212,6 +212,29 @@ export default function HistoricalDataChart() {
             className="absolute top-0 bottom-0 w-px bg-black opacity-60 pointer-events-none"
             style={{ left: `${hoveredPoint.chartX}%` }}
           />
+        )}
+        
+        {/* Tooltip positioned relative to chart */}
+        {hoveredPoint && hoveredPoint.type === type && (
+          <div
+            className="absolute z-50 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 p-2 pointer-events-none text-sm whitespace-nowrap"
+            style={{
+              left: `${hoveredPoint.x + 10}px`,
+              top: `${hoveredPoint.y - 50}px`
+            }}
+          >
+            <div className="font-medium text-gray-800 mb-1">
+              {hoveredPoint.data.timestamp.toLocaleDateString()} {hoveredPoint.data.timestamp.toLocaleTimeString()}
+            </div>
+            <div className={`text-base font-bold ${
+              hoveredPoint.type === 'temperature' ? 'text-orange-600' : 'text-blue-600'
+            }`}>
+              {hoveredPoint.type === 'temperature' 
+                ? `${hoveredPoint.data.temperature.toFixed(1)}°C`
+                : `${hoveredPoint.data.humidity.toFixed(1)}%`
+              }
+            </div>
+          </div>
         )}
       </div>
     );
@@ -358,28 +381,6 @@ export default function HistoricalDataChart() {
         </div>
       </div>
 
-      {/* Hover Tooltip */}
-      {hoveredPoint && (
-        <div
-          className="fixed z-50 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 p-2 pointer-events-none text-sm"
-          style={{
-            left: `${hoveredPoint.x + 10}px`,
-            top: `${hoveredPoint.y - 60}px`
-          }}
-        >
-          <div className="font-medium text-gray-800 mb-1">
-            {hoveredPoint.data.timestamp.toLocaleDateString()} {hoveredPoint.data.timestamp.toLocaleTimeString()}
-          </div>
-          <div className={`text-base font-bold ${
-            hoveredPoint.type === 'temperature' ? 'text-orange-600' : 'text-blue-600'
-          }`}>
-            {hoveredPoint.type === 'temperature' 
-              ? `${hoveredPoint.data.temperature.toFixed(1)}°C`
-              : `${hoveredPoint.data.humidity.toFixed(1)}%`
-            }
-          </div>
-        </div>
-      )}
     </motion.div>
   );
 }
