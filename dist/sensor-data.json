@@ -8,15 +8,15 @@
       "capabilities": [
         {
           "type": "devices.capabilities.temperature",
-          "value": 71.24
+          "value": 71.42
         },
         {
           "type": "devices.capabilities.humidity",
-          "value": 48.5
+          "value": 50.7
         }
       ]
     }
   },
-  "timestamp": "2025-09-30T19:19:44.583Z",
+  "timestamp": "2025-09-30T19:32:17.222Z",
   "source": "github-actions"
 }
