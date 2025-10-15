@@ -12,11 +12,11 @@
         },
         {
           "type": "devices.capabilities.humidity",
-          "value": 54
+          "value": 53.9
         }
       ]
     }
   },
-  "timestamp": "2025-10-15T20:51:18.051Z",
+  "timestamp": "2025-10-15T21:12:28.011Z",
   "source": "github-actions"
 }
